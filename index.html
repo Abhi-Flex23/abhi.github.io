@@ -2,27 +2,43 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Flappy Bird Clone</title>
   <style>
-    body, html {
+    body {
       margin: 0;
       padding: 0;
-      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f7f7f7;
     }
     canvas {
-      display: block;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: #f7f7f7;
+      border: 2px solid #000;
+    }
+    .menu {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas"></canvas>
+  <div class="menu" id="startMenu">
+    <h1>Welcome to Flappy Bird Clone</h1>
+    <button onclick="startGame()">Start Game</button>
+  </div>
+  <div class="menu" id="gameOverMenu">
+    <h1>Game Over!</h1>
+    <p>Your Score: <span id="score"></span></p>
+    <button onclick="restartGame()">Restart</button>
+    <button onclick="shareScore()">Share Score</button>
+  </div>
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -36,30 +52,34 @@
     let score = 0;
     let gameSpeed = 2;
     const pipeWidth = 50;
-    const pipeGap = 250; // Adjusted gap for better visibility on mobile
-    const birdSize = 40; // Adjusted bird size for better visibility
+    const pipeGap = 200;
+    let isGameOver = false;
 
     // Event Listeners
-    canvas.addEventListener('click', flap);
+    document.addEventListener('keydown', flap);
 
     // Functions
-    function flap() {
-      velocity = jumpStrength;
+    function flap(event) {
+      if (event.keyCode === 32) { // Spacebar
+        if (!isGameOver) {
+          velocity = jumpStrength;
+        } else {
+          restartGame();
+        }
+      }
     }
 
     function drawBird() {
       ctx.fillStyle = '#FF5733';
       ctx.beginPath();
-      ctx.arc(canvas.width / 4, birdY, birdSize / 2, 0, Math.PI * 2);
+      ctx.arc(100, birdY, 20, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    function drawPipes() {
+    function drawPipe(pipe) {
       ctx.fillStyle = '#50C878';
-      pipes.forEach(pipe => {
-        ctx.fillRect(pipe.x, 0, pipeWidth, pipe.topHeight);
-        ctx.fillRect(pipe.x, pipe.bottomY, pipeWidth, canvas.height - pipe.bottomY);
-      });
+      ctx.fillRect(pipe.x, 0, pipeWidth, pipe.topHeight);
+      ctx.fillRect(pipe.x, pipe.bottomY, pipeWidth, canvas.height - pipe.bottomY);
     }
 
     function movePipes() {
@@ -87,8 +107,8 @@
         endGame();
       }
       pipes.forEach(pipe => {
-        if (canvas.width / 4 + birdSize / 2 > pipe.x && canvas.width / 4 - birdSize / 2 < pipe.x + pipeWidth) {
-          if (birdY - birdSize / 2 < pipe.topHeight || birdY + birdSize / 2 > pipe.bottomY) {
+        if (100 + 20 > pipe.x && 100 - 20 < pipe.x + pipeWidth) {
+          if (birdY - 20 < pipe.topHeight || birdY + 20 > pipe.bottomY) {
             endGame();
           }
         }
@@ -96,25 +116,49 @@
     }
 
     function endGame() {
-      alert('Game Over! Your score: ' + score);
-      location.reload();
+      isGameOver = true;
+      document.getElementById('score').textContent = score;
+      document.getElementById('gameOverMenu').style.display = 'block';
+    }
+
+    function startGame() {
+      document.getElementById('startMenu').style.display = 'none';
+      isGameOver = false;
+      birdY = canvas.height / 2;
+      velocity = 0;
+      score = 0;
+      pipes = [];
+      generatePipes();
+      gameLoop();
+      setInterval(generatePipes, 2000);
+    }
+
+    function restartGame() {
+      document.getElementById('gameOverMenu').style.display = 'none';
+      startGame();
+    }
+
+    function shareScore() {
+      const sharedScore = `I scored ${score} in Flappy Bird Clone! Can you beat it?`;
+      // Implement sharing functionality (e.g., using Web Share API or social media SDKs)
+      alert(sharedScore);
     }
 
     function gameLoop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawBird();
-      drawPipes();
+      pipes.forEach(drawPipe);
       movePipes();
       collisionDetection();
       velocity += gravity;
       birdY += velocity;
-      requestAnimationFrame(gameLoop);
+      if (!isGameOver) {
+        requestAnimationFrame(gameLoop);
+      }
     }
 
     // Start the game
-    generatePipes();
-    gameLoop();
-    setInterval(generatePipes, 2000);
+    startGame();
   </script>
 </body>
 </html>
