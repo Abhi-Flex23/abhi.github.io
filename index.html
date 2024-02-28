@@ -17,27 +17,9 @@
     canvas {
       border: 2px solid #000;
     }
-    .menu {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      display: none;
-    }
   </style>
 </head>
 <body>
-  <div class="menu" id="startMenu">
-    <h1>Welcome to Flappy Bird Clone</h1>
-    <button onclick="startGame()">Start Game</button>
-  </div>
-  <div class="menu" id="gameOverMenu">
-    <h1>Game Over!</h1>
-    <p>Your Score: <span id="score"></span></p>
-    <button onclick="restartGame()">Restart</button>
-    <button onclick="shareScore()">Share Score</button>
-  </div>
   <canvas id="gameCanvas" width="400" height="600"></canvas>
   <script>
     const canvas = document.getElementById('gameCanvas');
@@ -53,25 +35,13 @@
     let gameSpeed = 2;
     const pipeWidth = 50;
     const pipeGap = 200;
-    let isGameOver = false;
-    let isGameStarted = false;
 
     // Event Listeners
-    document.addEventListener('keydown', flap);
+    canvas.addEventListener('click', flap);
 
     // Functions
-    function flap(event) {
-      if (event.keyCode === 32) { // Spacebar
-        if (!isGameOver && isGameStarted) {
-          velocity = jumpStrength;
-        } else {
-          if (!isGameStarted) {
-            startGame();
-          } else {
-            restartGame();
-          }
-        }
-      }
+    function flap() {
+      velocity = jumpStrength;
     }
 
     function drawBird() {
@@ -81,10 +51,12 @@
       ctx.fill();
     }
 
-    function drawPipe(pipe) {
+    function drawPipes() {
       ctx.fillStyle = '#50C878';
-      ctx.fillRect(pipe.x, 0, pipeWidth, pipe.topHeight);
-      ctx.fillRect(pipe.x, pipe.bottomY, pipeWidth, canvas.height - pipe.bottomY);
+      pipes.forEach(pipe => {
+        ctx.fillRect(pipe.x, 0, pipeWidth, pipe.topHeight);
+        ctx.fillRect(pipe.x, pipe.bottomY, pipeWidth, canvas.height - pipe.bottomY);
+      });
     }
 
     function movePipes() {
@@ -121,50 +93,25 @@
     }
 
     function endGame() {
-      isGameOver = true;
-      document.getElementById('score').textContent = score;
-      document.getElementById('gameOverMenu').style.display = 'block';
-    }
-
-    function startGame() {
-      document.getElementById('startMenu').style.display = 'none';
-      isGameStarted = true;
-      isGameOver = false;
-      birdY = canvas.height / 2;
-      velocity = 0;
-      score = 0;
-      pipes = [];
-      generatePipes();
-      gameLoop();
-      setInterval(generatePipes, 2000);
-    }
-
-    function restartGame() {
-      document.getElementById('gameOverMenu').style.display = 'none';
-      startGame();
-    }
-
-    function shareScore() {
-      const sharedScore = `I scored ${score} in Flappy Bird Clone! Can you beat it?`;
-      // Implement sharing functionality (e.g., using Web Share API or social media SDKs)
-      alert(sharedScore);
+      alert('Game Over! Your score: ' + score);
+      location.reload();
     }
 
     function gameLoop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawBird();
-      pipes.forEach(drawPipe);
+      drawPipes();
       movePipes();
       collisionDetection();
       velocity += gravity;
       birdY += velocity;
-      if (!isGameOver) {
-        requestAnimationFrame(gameLoop);
-      }
+      requestAnimationFrame(gameLoop);
     }
 
     // Start the game
-    document.getElementById('startMenu').style.display = 'block';
+    generatePipes();
+    gameLoop();
+    setInterval(generatePipes, 2000);
   </script>
 </body>
 </html>
