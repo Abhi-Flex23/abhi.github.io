@@ -37,6 +37,7 @@
     let gameSpeed = 2;
     const pipeWidth = 50;
     const pipeGap = 250; // Adjusted gap for better visibility on mobile
+    const birdSize = 40; // Adjusted bird size for better visibility
 
     // Event Listeners
     canvas.addEventListener('click', flap);
@@ -49,7 +50,7 @@
     function drawBird() {
       ctx.fillStyle = '#FF5733';
       ctx.beginPath();
-      ctx.arc(canvas.width / 4, birdY, 20, 0, Math.PI * 2);
+      ctx.arc(canvas.width / 4, birdY, birdSize / 2, 0, Math.PI * 2);
       ctx.fill();
     }
 
@@ -86,8 +87,8 @@
         endGame();
       }
       pipes.forEach(pipe => {
-        if (canvas.width / 4 + 20 > pipe.x && canvas.width / 4 - 20 < pipe.x + pipeWidth) {
-          if (birdY - 20 < pipe.topHeight || birdY + 20 > pipe.bottomY) {
+        if (canvas.width / 4 + birdSize / 2 > pipe.x && canvas.width / 4 - birdSize / 2 < pipe.x + pipeWidth) {
+          if (birdY - birdSize / 2 < pipe.topHeight || birdY + birdSize / 2 > pipe.bottomY) {
             endGame();
           }
         }
